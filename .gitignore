@@ -43,3 +43,8 @@ Thumbs.db
 
 # Local Netlify folder
 .netlify
+
+# Local env / secrets (defense-in-depth; no .env files committed today)
+.env
+.env.*
+!.env.example

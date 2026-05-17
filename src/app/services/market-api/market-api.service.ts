@@ -32,13 +32,21 @@ export class MarketApiService {
 
     constructor(private httpClient: HttpClient) {}
 
+    private get coinGeckoHeaders(): { [key: string]: string } {
+        // CoinGecko Demo API key: per-key quota (~30/min), bypasses IP-based
+        // rate limits. Header is the documented way to authenticate.
+        return environment.coinGeckoApiKey
+            ? { 'x-cg-demo-api-key': environment.coinGeckoApiKey }
+            : {};
+    }
+
     private getCurrentCoinPrice(coin: string) {
         return interval(this.currentPriceIntervalMs).pipe(
             startWith(0),
             Common.whenPageVisible(),
             switchMap(() =>
                 this.httpClient
-                    .get<CoinGeckoResponse>(`${this.baseUrl}/coins/${coin}`)
+                    .get<CoinGeckoResponse>(`${this.baseUrl}/coins/${coin}`, { headers: this.coinGeckoHeaders })
                     .pipe(pluck('market_data', 'current_price'))
             ),
             shareReplay(1)
@@ -76,7 +84,7 @@ export class MarketApiService {
             historyDataUrl.searchParams.set(key, value)
         );
         return this.httpClient
-            .get<MarketChart>(historyDataUrl.toString())
+            .get<MarketChart>(historyDataUrl.toString(), { headers: this.coinGeckoHeaders })
             .pipe(shareReplay(1));
     }
 }
